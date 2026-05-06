@@ -10,7 +10,7 @@ import { PinDialog } from "@/components/PinDialog";
 
 export const Route = createFileRoute("/services/airtime")({
   beforeLoad: () => {
-    if (typeof window !== "undefined" && !auth.getToken()) throw { redirect: "/login" };
+    if (typeof window !== "undefined" && !auth.getToken()) throw redirect({ to: "/login" });
   },
   component: AirtimePage,
 });

@@ -7,7 +7,7 @@ import { api, auth } from "@/lib/api";
 
 export const Route = createFileRoute("/notifications")({
   beforeLoad: () => {
-    if (typeof window !== "undefined" && !auth.getToken()) throw { redirect: "/login" };
+    if (typeof window !== "undefined" && !auth.getToken()) throw redirect({ to: "/login" });
   },
   component: NotifPage,
 });

@@ -8,7 +8,7 @@ import { api, auth } from "@/lib/api";
 
 export const Route = createFileRoute("/wallet/fund")({
   beforeLoad: () => {
-    if (typeof window !== "undefined" && !auth.getToken()) throw { redirect: "/login" };
+    if (typeof window !== "undefined" && !auth.getToken()) throw redirect({ to: "/login" });
   },
   component: FundPage,
 });

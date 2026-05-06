@@ -21,7 +21,7 @@ import { api, auth, formatNaira } from "@/lib/api";
 export const Route = createFileRoute("/home")({
   beforeLoad: () => {
     if (typeof window !== "undefined" && !auth.getToken()) {
-      throw { redirect: "/login" };
+      throw redirect({ to: "/login" });
     }
   },
   component: HomePage,
