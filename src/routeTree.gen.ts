@@ -9,38 +9,268 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TransactionsRouteImport } from './routes/transactions'
+import { Route as ServicesRouteImport } from './routes/services'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WalletTransferRouteImport } from './routes/wallet.transfer'
+import { Route as WalletFundRouteImport } from './routes/wallet.fund'
+import { Route as ServicesExamRouteImport } from './routes/services.exam'
+import { Route as ServicesElectricityRouteImport } from './routes/services.electricity'
+import { Route as ServicesDataRouteImport } from './routes/services.data'
+import { Route as ServicesCryptoRouteImport } from './routes/services.crypto'
+import { Route as ServicesAirtimeRouteImport } from './routes/services.airtime'
 
+const TransactionsRoute = TransactionsRouteImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WalletTransferRoute = WalletTransferRouteImport.update({
+  id: '/wallet/transfer',
+  path: '/wallet/transfer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalletFundRoute = WalletFundRouteImport.update({
+  id: '/wallet/fund',
+  path: '/wallet/fund',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesExamRoute = ServicesExamRouteImport.update({
+  id: '/exam',
+  path: '/exam',
+  getParentRoute: () => ServicesRoute,
+} as any)
+const ServicesElectricityRoute = ServicesElectricityRouteImport.update({
+  id: '/electricity',
+  path: '/electricity',
+  getParentRoute: () => ServicesRoute,
+} as any)
+const ServicesDataRoute = ServicesDataRouteImport.update({
+  id: '/data',
+  path: '/data',
+  getParentRoute: () => ServicesRoute,
+} as any)
+const ServicesCryptoRoute = ServicesCryptoRouteImport.update({
+  id: '/crypto',
+  path: '/crypto',
+  getParentRoute: () => ServicesRoute,
+} as any)
+const ServicesAirtimeRoute = ServicesAirtimeRouteImport.update({
+  id: '/airtime',
+  path: '/airtime',
+  getParentRoute: () => ServicesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/register': typeof RegisterRoute
+  '/services': typeof ServicesRouteWithChildren
+  '/transactions': typeof TransactionsRoute
+  '/services/airtime': typeof ServicesAirtimeRoute
+  '/services/crypto': typeof ServicesCryptoRoute
+  '/services/data': typeof ServicesDataRoute
+  '/services/electricity': typeof ServicesElectricityRoute
+  '/services/exam': typeof ServicesExamRoute
+  '/wallet/fund': typeof WalletFundRoute
+  '/wallet/transfer': typeof WalletTransferRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/register': typeof RegisterRoute
+  '/services': typeof ServicesRouteWithChildren
+  '/transactions': typeof TransactionsRoute
+  '/services/airtime': typeof ServicesAirtimeRoute
+  '/services/crypto': typeof ServicesCryptoRoute
+  '/services/data': typeof ServicesDataRoute
+  '/services/electricity': typeof ServicesElectricityRoute
+  '/services/exam': typeof ServicesExamRoute
+  '/wallet/fund': typeof WalletFundRoute
+  '/wallet/transfer': typeof WalletTransferRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/register': typeof RegisterRoute
+  '/services': typeof ServicesRouteWithChildren
+  '/transactions': typeof TransactionsRoute
+  '/services/airtime': typeof ServicesAirtimeRoute
+  '/services/crypto': typeof ServicesCryptoRoute
+  '/services/data': typeof ServicesDataRoute
+  '/services/electricity': typeof ServicesElectricityRoute
+  '/services/exam': typeof ServicesExamRoute
+  '/wallet/fund': typeof WalletFundRoute
+  '/wallet/transfer': typeof WalletTransferRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/home'
+    | '/login'
+    | '/notifications'
+    | '/profile'
+    | '/register'
+    | '/services'
+    | '/transactions'
+    | '/services/airtime'
+    | '/services/crypto'
+    | '/services/data'
+    | '/services/electricity'
+    | '/services/exam'
+    | '/wallet/fund'
+    | '/wallet/transfer'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/home'
+    | '/login'
+    | '/notifications'
+    | '/profile'
+    | '/register'
+    | '/services'
+    | '/transactions'
+    | '/services/airtime'
+    | '/services/crypto'
+    | '/services/data'
+    | '/services/electricity'
+    | '/services/exam'
+    | '/wallet/fund'
+    | '/wallet/transfer'
+  id:
+    | '__root__'
+    | '/'
+    | '/home'
+    | '/login'
+    | '/notifications'
+    | '/profile'
+    | '/register'
+    | '/services'
+    | '/transactions'
+    | '/services/airtime'
+    | '/services/crypto'
+    | '/services/data'
+    | '/services/electricity'
+    | '/services/exam'
+    | '/wallet/fund'
+    | '/wallet/transfer'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HomeRoute: typeof HomeRoute
+  LoginRoute: typeof LoginRoute
+  NotificationsRoute: typeof NotificationsRoute
+  ProfileRoute: typeof ProfileRoute
+  RegisterRoute: typeof RegisterRoute
+  ServicesRoute: typeof ServicesRouteWithChildren
+  TransactionsRoute: typeof TransactionsRoute
+  WalletFundRoute: typeof WalletFundRoute
+  WalletTransferRoute: typeof WalletTransferRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/transactions': {
+      id: '/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof TransactionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +278,90 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/wallet/transfer': {
+      id: '/wallet/transfer'
+      path: '/wallet/transfer'
+      fullPath: '/wallet/transfer'
+      preLoaderRoute: typeof WalletTransferRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallet/fund': {
+      id: '/wallet/fund'
+      path: '/wallet/fund'
+      fullPath: '/wallet/fund'
+      preLoaderRoute: typeof WalletFundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services/exam': {
+      id: '/services/exam'
+      path: '/exam'
+      fullPath: '/services/exam'
+      preLoaderRoute: typeof ServicesExamRouteImport
+      parentRoute: typeof ServicesRoute
+    }
+    '/services/electricity': {
+      id: '/services/electricity'
+      path: '/electricity'
+      fullPath: '/services/electricity'
+      preLoaderRoute: typeof ServicesElectricityRouteImport
+      parentRoute: typeof ServicesRoute
+    }
+    '/services/data': {
+      id: '/services/data'
+      path: '/data'
+      fullPath: '/services/data'
+      preLoaderRoute: typeof ServicesDataRouteImport
+      parentRoute: typeof ServicesRoute
+    }
+    '/services/crypto': {
+      id: '/services/crypto'
+      path: '/crypto'
+      fullPath: '/services/crypto'
+      preLoaderRoute: typeof ServicesCryptoRouteImport
+      parentRoute: typeof ServicesRoute
+    }
+    '/services/airtime': {
+      id: '/services/airtime'
+      path: '/airtime'
+      fullPath: '/services/airtime'
+      preLoaderRoute: typeof ServicesAirtimeRouteImport
+      parentRoute: typeof ServicesRoute
+    }
   }
 }
 
+interface ServicesRouteChildren {
+  ServicesAirtimeRoute: typeof ServicesAirtimeRoute
+  ServicesCryptoRoute: typeof ServicesCryptoRoute
+  ServicesDataRoute: typeof ServicesDataRoute
+  ServicesElectricityRoute: typeof ServicesElectricityRoute
+  ServicesExamRoute: typeof ServicesExamRoute
+}
+
+const ServicesRouteChildren: ServicesRouteChildren = {
+  ServicesAirtimeRoute: ServicesAirtimeRoute,
+  ServicesCryptoRoute: ServicesCryptoRoute,
+  ServicesDataRoute: ServicesDataRoute,
+  ServicesElectricityRoute: ServicesElectricityRoute,
+  ServicesExamRoute: ServicesExamRoute,
+}
+
+const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
+  ServicesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HomeRoute: HomeRoute,
+  LoginRoute: LoginRoute,
+  NotificationsRoute: NotificationsRoute,
+  ProfileRoute: ProfileRoute,
+  RegisterRoute: RegisterRoute,
+  ServicesRoute: ServicesRouteWithChildren,
+  TransactionsRoute: TransactionsRoute,
+  WalletFundRoute: WalletFundRoute,
+  WalletTransferRoute: WalletTransferRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
