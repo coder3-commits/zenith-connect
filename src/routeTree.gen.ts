@@ -16,6 +16,9 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ServicesElectricityRouteImport } from './routes/services.electricity'
+import { Route as ServicesDataRouteImport } from './routes/services.data'
+import { Route as ServicesAirtimeRouteImport } from './routes/services.airtime'
 
 const TransactionsRoute = TransactionsRouteImport.update({
   id: '/transactions',
@@ -52,6 +55,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServicesElectricityRoute = ServicesElectricityRouteImport.update({
+  id: '/electricity',
+  path: '/electricity',
+  getParentRoute: () => ServicesRoute,
+} as any)
+const ServicesDataRoute = ServicesDataRouteImport.update({
+  id: '/data',
+  path: '/data',
+  getParentRoute: () => ServicesRoute,
+} as any)
+const ServicesAirtimeRoute = ServicesAirtimeRouteImport.update({
+  id: '/airtime',
+  path: '/airtime',
+  getParentRoute: () => ServicesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,8 +77,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
-  '/services': typeof ServicesRoute
+  '/services': typeof ServicesRouteWithChildren
   '/transactions': typeof TransactionsRoute
+  '/services/airtime': typeof ServicesAirtimeRoute
+  '/services/data': typeof ServicesDataRoute
+  '/services/electricity': typeof ServicesElectricityRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,8 +89,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
-  '/services': typeof ServicesRoute
+  '/services': typeof ServicesRouteWithChildren
   '/transactions': typeof TransactionsRoute
+  '/services/airtime': typeof ServicesAirtimeRoute
+  '/services/data': typeof ServicesDataRoute
+  '/services/electricity': typeof ServicesElectricityRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,8 +102,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
-  '/services': typeof ServicesRoute
+  '/services': typeof ServicesRouteWithChildren
   '/transactions': typeof TransactionsRoute
+  '/services/airtime': typeof ServicesAirtimeRoute
+  '/services/data': typeof ServicesDataRoute
+  '/services/electricity': typeof ServicesElectricityRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +118,9 @@ export interface FileRouteTypes {
     | '/register'
     | '/services'
     | '/transactions'
+    | '/services/airtime'
+    | '/services/data'
+    | '/services/electricity'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +130,9 @@ export interface FileRouteTypes {
     | '/register'
     | '/services'
     | '/transactions'
+    | '/services/airtime'
+    | '/services/data'
+    | '/services/electricity'
   id:
     | '__root__'
     | '/'
@@ -109,6 +142,9 @@ export interface FileRouteTypes {
     | '/register'
     | '/services'
     | '/transactions'
+    | '/services/airtime'
+    | '/services/data'
+    | '/services/electricity'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -117,7 +153,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRoute
   RegisterRoute: typeof RegisterRoute
-  ServicesRoute: typeof ServicesRoute
+  ServicesRoute: typeof ServicesRouteWithChildren
   TransactionsRoute: typeof TransactionsRoute
 }
 
@@ -172,8 +208,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/services/electricity': {
+      id: '/services/electricity'
+      path: '/electricity'
+      fullPath: '/services/electricity'
+      preLoaderRoute: typeof ServicesElectricityRouteImport
+      parentRoute: typeof ServicesRoute
+    }
+    '/services/data': {
+      id: '/services/data'
+      path: '/data'
+      fullPath: '/services/data'
+      preLoaderRoute: typeof ServicesDataRouteImport
+      parentRoute: typeof ServicesRoute
+    }
+    '/services/airtime': {
+      id: '/services/airtime'
+      path: '/airtime'
+      fullPath: '/services/airtime'
+      preLoaderRoute: typeof ServicesAirtimeRouteImport
+      parentRoute: typeof ServicesRoute
+    }
   }
 }
+
+interface ServicesRouteChildren {
+  ServicesAirtimeRoute: typeof ServicesAirtimeRoute
+  ServicesDataRoute: typeof ServicesDataRoute
+  ServicesElectricityRoute: typeof ServicesElectricityRoute
+}
+
+const ServicesRouteChildren: ServicesRouteChildren = {
+  ServicesAirtimeRoute: ServicesAirtimeRoute,
+  ServicesDataRoute: ServicesDataRoute,
+  ServicesElectricityRoute: ServicesElectricityRoute,
+}
+
+const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
+  ServicesRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -181,7 +254,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRoute,
   RegisterRoute: RegisterRoute,
-  ServicesRoute: ServicesRoute,
+  ServicesRoute: ServicesRouteWithChildren,
   TransactionsRoute: TransactionsRoute,
 }
 export const routeTree = rootRouteImport
