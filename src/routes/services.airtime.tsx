@@ -1,7 +1,8 @@
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Loader2, Phone, X } from "lucide-react";
+import { Loader2, Phone, X } from "lucide-react";
+import { Receipt } from "@/components/Receipt";
 import { toast } from "sonner";
 import { MobileShell } from "@/components/MobileShell";
 import { ScreenHeader } from "@/components/ScreenHeader";
