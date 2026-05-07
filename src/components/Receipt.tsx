@@ -1,7 +1,8 @@
-import { useRef } from "react";
-import { CheckCircle2, Copy, Download, Share2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { CheckCircle2, Copy, Download, FileText, Image as ImageIcon, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "@tanstack/react-router";
+import { toPng } from "html-to-image";
 import { formatNaira } from "@/lib/api";
 
 export type ReceiptDetail = { label: string; value: string };
@@ -84,6 +85,64 @@ export function Receipt({
     URL.revokeObjectURL(url);
   };
 
+  const [exporting, setExporting] = useState(false);
+
+  const renderPng = async (): Promise<Blob | null> => {
+    if (!ref.current) return null;
+    try {
+      const dataUrl = await toPng(ref.current, {
+        pixelRatio: 3,
+        cacheBust: true,
+        backgroundColor: "#ffffff",
+      });
+      const res = await fetch(dataUrl);
+      return await res.blob();
+    } catch {
+      return null;
+    }
+  };
+
+  const downloadImage = async () => {
+    setExporting(true);
+    const blob = await renderPng();
+    setExporting(false);
+    if (!blob) { toast.error("Couldn't export image"); return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `zentrix-${reference}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Receipt image saved");
+  };
+
+  const shareImage = async () => {
+    setExporting(true);
+    const blob = await renderPng();
+    setExporting(false);
+    if (!blob) { toast.error("Couldn't export image"); return; }
+    const file = new File([blob], `zentrix-${reference}.png`, { type: "image/png" });
+    const nav: any = navigator;
+    if (nav.canShare && nav.canShare({ files: [file] })) {
+      try {
+        await nav.share({ files: [file], title: `Zentrix • ${title}`, text: textBlock });
+        return;
+      } catch { /* cancelled */ }
+    }
+    // Fallback — download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `zentrix-${reference}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Image downloaded — share from your gallery");
+  };
+
   const print = () => window.print();
 
   return (
@@ -142,10 +201,11 @@ export function Receipt({
       </div>
 
       {/* Actions */}
-      <div className="mt-5 grid grid-cols-3 gap-3 print:hidden">
-        <ActionBtn icon={<Share2 className="h-4 w-4" />} label="Share" onClick={share} />
-        <ActionBtn icon={<Download className="h-4 w-4" />} label="Download" onClick={download} />
-        <ActionBtn icon={<Copy className="h-4 w-4" />} label="Copy ref" onClick={copyRef} />
+      <div className="mt-5 grid grid-cols-4 gap-2 print:hidden">
+        <ActionBtn icon={<Share2 className="h-4 w-4" />} label={exporting ? "..." : "Share"} onClick={shareImage} />
+        <ActionBtn icon={<ImageIcon className="h-4 w-4" />} label="PNG" onClick={downloadImage} />
+        <ActionBtn icon={<FileText className="h-4 w-4" />} label="Text" onClick={download} />
+        <ActionBtn icon={<Copy className="h-4 w-4" />} label="Copy" onClick={copyRef} />
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 print:hidden">
