@@ -41,6 +41,7 @@ function AirtimePage() {
   const [networkLocked, setNetworkLocked] = useState(false);
   const [askPin, setAskPin] = useState(false);
   const [step, setStep] = useState<"form" | "review" | "success">("form");
+  const [receipt, setReceipt] = useState<{ reference: string; timestamp: number } | null>(null);
 
   const wallet = useQuery({ queryKey: ["wallet"], queryFn: () => api<any>("/wallet") });
   const balance = wallet.data?.wallet?.balance ?? wallet.data?.balance ?? 0;
@@ -61,48 +62,43 @@ function AirtimePage() {
 
   const buy = useMutation({
     mutationFn: (pin: string) =>
-      api("/vas/airtime", {
+      api<any>("/vas/airtime", {
         method: "POST",
         body: { phoneNumber: phone, amount: amt, network, pin },
       }),
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       saveRecipient(phone, network);
       qc.invalidateQueries({ queryKey: ["wallet"] });
       qc.invalidateQueries({ queryKey: ["wallet", "transactions"] });
+      const reference =
+        res?.reference || res?.transaction?.reference || res?.id || `ZTX${Date.now()}`;
+      setReceipt({ reference, timestamp: Date.now() });
       setStep("success");
     },
     onError: (e: any) => toast.error(e.message || "Purchase failed"),
   });
 
-  if (step === "success") {
+  if (step === "success" && receipt) {
     return (
       <MobileShell hideNav>
-        <ScreenHeader title="Successful" back={false} />
-        <div className="flex flex-col items-center px-6 pt-10 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-success/15 text-success">
-            <CheckCircle2 className="h-10 w-10" />
-          </div>
-          <h2 className="mt-5 font-display text-2xl font-bold">{formatNaira(amt)} sent</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {network} airtime delivered to {phone}
-          </p>
-          <div className="mt-8 grid w-full grid-cols-2 gap-3">
-            <button
-              onClick={() => {
-                setPhone(""); setAmount(""); setNetworkLocked(false); setStep("form");
-              }}
-              className="rounded-full bg-secondary py-3 text-sm font-semibold"
-            >
-              Buy again
-            </button>
-            <button
-              onClick={() => router.navigate({ to: "/home" })}
-              className="rounded-full bg-primary py-3 text-sm font-semibold text-primary-foreground"
-            >
-              Done
-            </button>
-          </div>
-        </div>
+        <ScreenHeader title="Receipt" back={false} />
+        <Receipt
+          title="Airtime Top-up"
+          amount={amt}
+          reference={receipt.reference}
+          timestamp={receipt.timestamp}
+          details={[
+            { label: "Recipient", value: phone },
+            { label: "Network", value: network },
+            { label: "Service", value: "Airtime" },
+          ]}
+          againLabel="Buy again"
+          onAgain={() => {
+            setPhone(""); setAmount(""); setNetworkLocked(false);
+            setReceipt(null); setStep("form");
+          }}
+          onDone={() => router.navigate({ to: "/home" })}
+        />
       </MobileShell>
     );
   }
