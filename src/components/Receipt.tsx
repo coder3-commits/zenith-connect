@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { CheckCircle2, Copy, Download, FileText, Image as ImageIcon, Share2 } from "lucide-react";
+import { CheckCircle2, Copy, FileText, Image as ImageIcon, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "@tanstack/react-router";
 import { toPng } from "html-to-image";
