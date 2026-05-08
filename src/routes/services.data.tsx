@@ -102,8 +102,8 @@ function DataPage() {
   });
 
   if (step === "success" && receipt) {
-    const bundleName = bundle?.name || bundle?.value || bundle?.size || "Data bundle";
-    const validity = bundle?.validity || bundle?.duration;
+    const bundleName = bundle?.name || "Data bundle";
+    const validity = bundle?.validity;
     return (
       <MobileShell hideNav>
         <ScreenHeader title="Receipt" back={false} />
