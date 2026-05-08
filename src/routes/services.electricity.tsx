@@ -1,5 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { api, auth, formatNaira } from "@/lib/api";
 import { PinDialog } from "@/components/PinDialog";
+import { Receipt } from "@/components/Receipt";
 
 export const Route = createFileRoute("/services/electricity")({
   beforeLoad: () => {
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/services/electricity")({
 });
 
 function ElectricityPage() {
+  const router = useRouter();
+  const qc = useQueryClient();
   const [planCode, setPlanCode] = useState("");
   const [meterType, setMeterType] = useState<"prepaid" | "postpaid">("prepaid");
   const [meter, setMeter] = useState("");
@@ -23,6 +26,9 @@ function ElectricityPage() {
   const [phone, setPhone] = useState("");
   const [verified, setVerified] = useState<{ name?: string; address?: string } | null>(null);
   const [askPin, setAskPin] = useState(false);
+  const [step, setStep] = useState<"form" | "confirm" | "success">("form");
+  const [result, setResult] = useState<any | null>(null);
+  const [receiptTs, setReceiptTs] = useState<number>(0);
 
   const plans = useQuery({
     queryKey: ["elec-plans"],
