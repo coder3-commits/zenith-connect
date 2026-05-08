@@ -303,8 +303,8 @@ function DataPage() {
 
           <div className="grid grid-cols-2 gap-3">
             {filtered.map((b: any) => {
-              const id = b.id || b.bundleId || b.code;
-              const active = (bundle?.id || bundle?.bundleId || bundle?.code) === id;
+              const id = b.bundleId;
+              const active = bundle?.bundleId === id;
               return (
                 <button
                   key={id}
@@ -315,11 +315,11 @@ function DataPage() {
                       : "bg-card text-foreground shadow-card"
                   }`}
                 >
-                  <p className="font-display text-base font-bold">{b.name || b.value || b.size}</p>
+                  <p className="font-display text-base font-bold">{b.name}</p>
                   <p className={`mt-1 text-xs ${active ? "text-white/80" : "text-muted-foreground"}`}>
-                    {b.validity || b.duration || ""}
+                    {b.validity || ""}
                   </p>
-                  <p className="mt-3 text-sm font-semibold">{formatNaira(b.price || b.amount)}</p>
+                  <p className="mt-3 text-sm font-semibold">{formatNaira(b.price)}</p>
                 </button>
               );
             })}
