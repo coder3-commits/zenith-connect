@@ -47,16 +47,49 @@ function ElectricityPage() {
 
   const buy = useMutation({
     mutationFn: (pin: string) =>
-      api("/vas/electricity", {
+      api<any>("/vas/electricity", {
         method: "POST",
         body: { meterNumber: meter, planCode, amount: Number(amount), meterType, phone, pin },
       }),
-    onSuccess: () => { toast.success("Electricity purchase successful"); setMeter(""); setAmount(""); setVerified(null); },
+    onSuccess: (res: any) => {
+      qc.invalidateQueries({ queryKey: ["wallet"] });
+      qc.invalidateQueries({ queryKey: ["wallet", "transactions"] });
+      setResult(res);
+      setReceiptTs(Date.now());
+      setStep("success");
+    },
     onError: (e: any) => toast.error(e.message || "Purchase failed"),
   });
 
   const canVerify = planCode && meter.length >= 10;
   const canBuy = verified && Number(amount) >= 100;
+
+  if (step === "success" && result) {
+    const details = [
+      { label: "Meter Number", value: String(result.meterNumber ?? meter) },
+      { label: "Token", value: String(result.token ?? "—") },
+      ...(result.units ? [{ label: "Units", value: String(result.units) }] : []),
+      { label: "Reference", value: String(result.reference ?? "—") },
+    ];
+    return (
+      <MobileShell hideNav>
+        <ScreenHeader title="Receipt" back={false} />
+        <Receipt
+          title="Electricity Token"
+          amount={Number(result.amount ?? amount)}
+          reference={String(result.reference ?? `ZTX${Date.now()}`)}
+          timestamp={receiptTs}
+          details={details}
+          againLabel="Buy again"
+          onAgain={() => {
+            setMeter(""); setAmount(""); setVerified(null);
+            setResult(null); setStep("form");
+          }}
+          onDone={() => router.navigate({ to: "/home" })}
+        />
+      </MobileShell>
+    );
+  }
 
   return (
     <MobileShell hideNav>
