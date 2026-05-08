@@ -1,5 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { api, auth, formatNaira } from "@/lib/api";
 import { PinDialog } from "@/components/PinDialog";
+import { Receipt } from "@/components/Receipt";
 
 export const Route = createFileRoute("/services/exam")({
   beforeLoad: () => {
