@@ -17,7 +17,9 @@ function NotifPage() {
     queryKey: ["notifications"],
     queryFn: () => api<any>("/notifications"),
   });
-  const list: any[] = q.data?.notifications ?? q.data ?? [];
+  const list: any[] = q.data?.notifications ?? [];
+  const unreadCount: number = q.data?.unreadCount ?? 0;
+  void unreadCount;
 
   return (
     <MobileShell hideNav>
