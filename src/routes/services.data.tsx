@@ -138,9 +138,9 @@ function DataPage() {
             <p className="text-xs uppercase tracking-wider text-muted-foreground">You're paying</p>
             <p className="mt-1 font-display text-3xl font-extrabold">{formatNaira(price)}</p>
             <div className="mt-5 space-y-3 border-t border-border pt-4 text-sm">
-              <Row label="Bundle" value={bundle?.name || bundle?.value || bundle?.size || "—"} />
-              {(bundle?.validity || bundle?.duration) && (
-                <Row label="Validity" value={bundle?.validity || bundle?.duration} />
+              <Row label="Bundle" value={bundle?.name || "—"} />
+              {bundle?.validity && (
+                <Row label="Validity" value={bundle.validity} />
               )}
               <Row label="Recipient" value={phone} />
               <Row label="Network" value={network} />
