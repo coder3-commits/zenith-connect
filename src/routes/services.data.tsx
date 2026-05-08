@@ -44,7 +44,7 @@ function DataPage() {
   const [receipt, setReceipt] = useState<{ reference: string; timestamp: number } | null>(null);
 
   const wallet = useQuery({ queryKey: ["wallet"], queryFn: () => api<any>("/wallet") });
-  const balance = wallet.data?.wallet?.balance ?? wallet.data?.balance ?? 0;
+  const balance = parseFloat(wallet.data?.wallet?.balance ?? "0");
   const recents = useMemo(() => getRecentRecipients(), [step]);
 
   useEffect(() => {
@@ -74,7 +74,7 @@ function DataPage() {
   }, [list, search]);
 
   const phoneValid = isValidNgPhone(phone);
-  const price = Number(bundle?.price || bundle?.amount || 0);
+  const price = Number(bundle?.price || 0);
   const insufficient = price > Number(balance);
   const canContinue = phoneValid && bundle && !insufficient;
 
@@ -84,7 +84,7 @@ function DataPage() {
         method: "POST",
         body: {
           phoneNumber: phone,
-          bundleId: bundle?.id || bundle?.bundleId || bundle?.code,
+          bundleId: bundle?.bundleId,
           network,
           pin,
         },
@@ -102,8 +102,8 @@ function DataPage() {
   });
 
   if (step === "success" && receipt) {
-    const bundleName = bundle?.name || bundle?.value || bundle?.size || "Data bundle";
-    const validity = bundle?.validity || bundle?.duration;
+    const bundleName = bundle?.name || "Data bundle";
+    const validity = bundle?.validity;
     return (
       <MobileShell hideNav>
         <ScreenHeader title="Receipt" back={false} />
@@ -138,9 +138,9 @@ function DataPage() {
             <p className="text-xs uppercase tracking-wider text-muted-foreground">You're paying</p>
             <p className="mt-1 font-display text-3xl font-extrabold">{formatNaira(price)}</p>
             <div className="mt-5 space-y-3 border-t border-border pt-4 text-sm">
-              <Row label="Bundle" value={bundle?.name || bundle?.value || bundle?.size || "—"} />
-              {(bundle?.validity || bundle?.duration) && (
-                <Row label="Validity" value={bundle?.validity || bundle?.duration} />
+              <Row label="Bundle" value={bundle?.name || "—"} />
+              {bundle?.validity && (
+                <Row label="Validity" value={bundle.validity} />
               )}
               <Row label="Recipient" value={phone} />
               <Row label="Network" value={network} />
@@ -303,8 +303,8 @@ function DataPage() {
 
           <div className="grid grid-cols-2 gap-3">
             {filtered.map((b: any) => {
-              const id = b.id || b.bundleId || b.code;
-              const active = (bundle?.id || bundle?.bundleId || bundle?.code) === id;
+              const id = b.bundleId;
+              const active = bundle?.bundleId === id;
               return (
                 <button
                   key={id}
@@ -315,11 +315,11 @@ function DataPage() {
                       : "bg-card text-foreground shadow-card"
                   }`}
                 >
-                  <p className="font-display text-base font-bold">{b.name || b.value || b.size}</p>
+                  <p className="font-display text-base font-bold">{b.name}</p>
                   <p className={`mt-1 text-xs ${active ? "text-white/80" : "text-muted-foreground"}`}>
-                    {b.validity || b.duration || ""}
+                    {b.validity || ""}
                   </p>
-                  <p className="mt-3 text-sm font-semibold">{formatNaira(b.price || b.amount)}</p>
+                  <p className="mt-3 text-sm font-semibold">{formatNaira(b.price)}</p>
                 </button>
               );
             })}

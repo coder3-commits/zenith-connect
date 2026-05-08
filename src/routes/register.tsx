@@ -1,13 +1,18 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 
-export const Route = createFileRoute("/register")({ component: RegisterPage });
+export const Route = createFileRoute("/register")({
+  validateSearch: (s: Record<string, unknown>) => ({ ref: typeof s.ref === "string" ? s.ref : undefined }),
+  component: RegisterPage,
+});
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const search = useSearch({ from: "/register" });
+  const [referralCode] = useState<string>(search.ref ?? "");
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -25,7 +30,10 @@ function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api("/auth/register", { method: "POST", body: form });
+      await api("/auth/register", {
+        method: "POST",
+        body: { ...form, referralCode: referralCode || undefined },
+      });
       toast.success("Account created — please log in");
       navigate({ to: "/login" });
     } catch (err: any) {

@@ -1,5 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { api, auth, formatNaira } from "@/lib/api";
 import { PinDialog } from "@/components/PinDialog";
+import { Receipt } from "@/components/Receipt";
 
 export const Route = createFileRoute("/services/electricity")({
   beforeLoad: () => {
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/services/electricity")({
 });
 
 function ElectricityPage() {
+  const router = useRouter();
+  const qc = useQueryClient();
   const [planCode, setPlanCode] = useState("");
   const [meterType, setMeterType] = useState<"prepaid" | "postpaid">("prepaid");
   const [meter, setMeter] = useState("");
@@ -23,6 +26,9 @@ function ElectricityPage() {
   const [phone, setPhone] = useState("");
   const [verified, setVerified] = useState<{ name?: string; address?: string } | null>(null);
   const [askPin, setAskPin] = useState(false);
+  const [step, setStep] = useState<"form" | "confirm" | "success">("form");
+  const [result, setResult] = useState<any | null>(null);
+  const [receiptTs, setReceiptTs] = useState<number>(0);
 
   const plans = useQuery({
     queryKey: ["elec-plans"],
@@ -41,16 +47,49 @@ function ElectricityPage() {
 
   const buy = useMutation({
     mutationFn: (pin: string) =>
-      api("/vas/electricity", {
+      api<any>("/vas/electricity", {
         method: "POST",
         body: { meterNumber: meter, planCode, amount: Number(amount), meterType, phone, pin },
       }),
-    onSuccess: () => { toast.success("Electricity purchase successful"); setMeter(""); setAmount(""); setVerified(null); },
+    onSuccess: (res: any) => {
+      qc.invalidateQueries({ queryKey: ["wallet"] });
+      qc.invalidateQueries({ queryKey: ["wallet", "transactions"] });
+      setResult(res);
+      setReceiptTs(Date.now());
+      setStep("success");
+    },
     onError: (e: any) => toast.error(e.message || "Purchase failed"),
   });
 
   const canVerify = planCode && meter.length >= 10;
   const canBuy = verified && Number(amount) >= 100;
+
+  if (step === "success" && result) {
+    const details = [
+      { label: "Meter Number", value: String(result.meterNumber ?? meter) },
+      { label: "Token", value: String(result.token ?? "—") },
+      ...(result.units ? [{ label: "Units", value: String(result.units) }] : []),
+      { label: "Reference", value: String(result.reference ?? "—") },
+    ];
+    return (
+      <MobileShell hideNav>
+        <ScreenHeader title="Receipt" back={false} />
+        <Receipt
+          title="Electricity Token"
+          amount={Number(result.amount ?? amount)}
+          reference={String(result.reference ?? `ZTX${Date.now()}`)}
+          timestamp={receiptTs}
+          details={details}
+          againLabel="Buy again"
+          onAgain={() => {
+            setMeter(""); setAmount(""); setVerified(null);
+            setResult(null); setStep("form");
+          }}
+          onDone={() => router.navigate({ to: "/home" })}
+        />
+      </MobileShell>
+    );
+  }
 
   return (
     <MobileShell hideNav>
