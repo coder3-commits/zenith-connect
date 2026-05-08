@@ -15,9 +15,9 @@ export const Route = createFileRoute("/transactions")({
 function TxPage() {
   const q = useQuery({
     queryKey: ["transactions", "all"],
-    queryFn: () => api<any>("/transactions", { query: { limit: 50 } }),
+    queryFn: () => api<any>("/wallet/transactions", { query: { limit: 50 } }),
   });
-  const list: any[] = q.data?.transactions ?? q.data ?? [];
+  const list: any[] = q.data?.transactions ?? [];
 
   return (
     <MobileShell>
