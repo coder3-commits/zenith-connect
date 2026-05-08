@@ -74,7 +74,7 @@ function DataPage() {
   }, [list, search]);
 
   const phoneValid = isValidNgPhone(phone);
-  const price = Number(bundle?.price || bundle?.amount || 0);
+  const price = Number(bundle?.price || 0);
   const insufficient = price > Number(balance);
   const canContinue = phoneValid && bundle && !insufficient;
 
