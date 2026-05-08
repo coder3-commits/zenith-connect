@@ -17,10 +17,15 @@ export const Route = createFileRoute("/services/exam")({
 });
 
 function ExamPage() {
+  const router = useRouter();
+  const qc = useQueryClient();
   const [planCode, setPlanCode] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [phone, setPhone] = useState("");
   const [askPin, setAskPin] = useState(false);
+  const [step, setStep] = useState<"form" | "confirm" | "success">("form");
+  const [result, setResult] = useState<any | null>(null);
+  const [receiptTs, setReceiptTs] = useState<number>(0);
 
   const plans = useQuery({
     queryKey: ["exam-plans"],
@@ -29,13 +34,50 @@ function ExamPage() {
   const list: any[] = plans.data?.plans ?? [];
 
   const buy = useMutation({
-    mutationFn: (pin: string) => api("/vas/exam", { method: "POST", body: { planCode, quantity, phone, pin } }),
-    onSuccess: () => { toast.success("Exam PIN purchased"); setPlanCode(""); setQuantity(1); },
+    mutationFn: (pin: string) => api<any>("/vas/exam", { method: "POST", body: { planCode, quantity, phone, pin } }),
+    onSuccess: (res: any) => {
+      qc.invalidateQueries({ queryKey: ["wallet"] });
+      qc.invalidateQueries({ queryKey: ["wallet", "transactions"] });
+      setResult(res);
+      setReceiptTs(Date.now());
+      setStep("success");
+    },
     onError: (e: any) => toast.error(e.message || "Purchase failed"),
   });
 
   const selected = list.find((p: any) => (p.code || p.planCode) === planCode);
   const total = selected ? Number(selected.price || selected.amount) * quantity : 0;
+
+  if (step === "success" && result) {
+    const pins: any[] = result.pins ?? [];
+    const details = [
+      { label: "Exam Type", value: String(result.examType ?? selected?.name ?? selected?.title ?? "—") },
+      { label: "Quantity", value: String(result.quantity ?? quantity) },
+      ...pins.flatMap((p: any, i: number) => [
+        { label: `PIN ${i + 1}`, value: String(p.pin) },
+        { label: `Serial ${i + 1}`, value: String(p.serial) },
+      ]),
+      { label: "Reference", value: String(result.reference ?? "—") },
+    ];
+    return (
+      <MobileShell hideNav>
+        <ScreenHeader title="Receipt" back={false} />
+        <Receipt
+          title="Exam PIN Purchase"
+          amount={Number(result.amount ?? total)}
+          reference={String(result.reference ?? `ZTX${Date.now()}`)}
+          timestamp={receiptTs}
+          details={details}
+          againLabel="Buy again"
+          onAgain={() => {
+            setPlanCode(""); setQuantity(1); setPhone("");
+            setResult(null); setStep("form");
+          }}
+          onDone={() => router.navigate({ to: "/home" })}
+        />
+      </MobileShell>
+    );
+  }
 
   return (
     <MobileShell hideNav>
