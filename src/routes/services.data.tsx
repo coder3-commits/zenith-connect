@@ -84,7 +84,7 @@ function DataPage() {
         method: "POST",
         body: {
           phoneNumber: phone,
-          bundleId: bundle?.id || bundle?.bundleId || bundle?.code,
+          bundleId: bundle?.bundleId,
           network,
           pin,
         },
