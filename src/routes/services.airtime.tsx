@@ -44,7 +44,7 @@ function AirtimePage() {
   const [receipt, setReceipt] = useState<{ reference: string; timestamp: number } | null>(null);
 
   const wallet = useQuery({ queryKey: ["wallet"], queryFn: () => api<any>("/wallet") });
-  const balance = wallet.data?.wallet?.balance ?? wallet.data?.balance ?? 0;
+  const balance = parseFloat(wallet.data?.wallet?.balance ?? "0");
   const recents = useMemo(() => getRecentRecipients(), [step]);
 
   // Auto-detect network from phone prefix
