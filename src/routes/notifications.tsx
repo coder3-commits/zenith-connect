@@ -18,8 +18,6 @@ function NotifPage() {
     queryFn: () => api<any>("/notifications"),
   });
   const list: any[] = q.data?.notifications ?? [];
-  const _unreadCount: number = q.data?.unreadCount ?? 0;
-  void _unreadCount;
 
   return (
     <MobileShell hideNav>
