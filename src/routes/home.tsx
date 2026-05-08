@@ -50,8 +50,8 @@ function HomePage() {
     queryFn: () => api<any>("/wallet/transactions", { query: { limit: 5 } }),
   });
 
-  const balance = wallet.data?.wallet?.balance ?? wallet.data?.balance ?? 0;
-  const txns: any[] = recent.data?.transactions ?? recent.data ?? [];
+  const balance = parseFloat(wallet.data?.wallet?.balance ?? "0");
+  const txns: any[] = recent.data?.transactions ?? [];
 
   return (
     <MobileShell>
