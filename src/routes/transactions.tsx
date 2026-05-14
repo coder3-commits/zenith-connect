@@ -16,6 +16,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { EmptyState } from "@/components/ui-kit";
+import { CacheStatus } from "@/components/CacheStatus";
 import { api, auth, formatNaira } from "@/lib/api";
 
 export const Route = createFileRoute("/transactions")({
@@ -94,6 +95,9 @@ function TxPage() {
           </button>
         }
       />
+      <div className="px-4 pb-1">
+        <CacheStatus dataUpdatedAt={q.dataUpdatedAt} isFetching={refreshing} />
+      </div>
 
       {/* Filter chips */}
       <div className="px-4 pb-3">
