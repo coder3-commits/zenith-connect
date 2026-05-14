@@ -22,6 +22,7 @@ import {
 import { MobileShell } from "@/components/MobileShell";
 import { api, auth, formatNaira } from "@/lib/api";
 import { AmountDisplay } from "@/components/ui-kit";
+import { CacheStatus } from "@/components/CacheStatus";
 
 export const Route = createFileRoute("/home")({
   beforeLoad: () => {
@@ -102,7 +103,10 @@ function HomePage() {
             <p className="mt-3 font-display text-[40px] font-extrabold leading-none">
               <AmountDisplay value={balance} hidden={hideBalance} />
             </p>
-            <p className="mt-1.5 text-[11px] text-white/55">Available · NGN</p>
+            <div className="mt-1.5 flex items-center justify-between">
+              <p className="text-[11px] text-white/55">Available · NGN</p>
+              <CacheStatus dataUpdatedAt={wallet.dataUpdatedAt} isFetching={wallet.isFetching} />
+            </div>
 
             <div className="mt-5 flex gap-2">
               <MiniStat Icon={TrendingUp} label="In" value="₦0" tone="success" />
