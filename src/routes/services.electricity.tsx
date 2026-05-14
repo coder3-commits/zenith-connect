@@ -69,7 +69,7 @@ function ElectricityPage() {
       { label: "Meter Number", value: String(result.meterNumber ?? meter) },
       { label: "Token", value: String(result.token ?? "—") },
       ...(result.units ? [{ label: "Units", value: String(result.units) }] : []),
-      { label: "Reference", value: String(result.reference ?? "—") },
+      { label: "Fee", value: formatNaira(Number(result.fee ?? 0)) },
     ];
     return (
       <MobileShell hideNav>

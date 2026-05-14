@@ -117,6 +117,7 @@ function DataPage() {
             ...(validity ? [{ label: "Validity", value: String(validity) }] : []),
             { label: "Recipient", value: phone },
             { label: "Network", value: network },
+            { label: "Fee", value: formatNaira(0) },
           ]}
           againLabel="Buy again"
           onAgain={() => {

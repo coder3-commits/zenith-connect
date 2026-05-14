@@ -91,6 +91,7 @@ function AirtimePage() {
             { label: "Recipient", value: phone },
             { label: "Network", value: network },
             { label: "Service", value: "Airtime" },
+            { label: "Fee", value: formatNaira(0) },
           ]}
           againLabel="Buy again"
           onAgain={() => {
