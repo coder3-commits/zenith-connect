@@ -57,7 +57,7 @@ function ExamPage() {
         { label: `PIN ${i + 1}`, value: String(p.pin) },
         { label: `Serial ${i + 1}`, value: String(p.serial) },
       ]),
-      { label: "Reference", value: String(result.reference ?? "—") },
+      { label: "Fee", value: formatNaira(Number(result.fee ?? 0)) },
     ];
     return (
       <MobileShell hideNav>
