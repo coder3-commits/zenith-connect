@@ -6,6 +6,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { EmptyState } from "@/components/ui-kit";
+import { CacheStatus } from "@/components/CacheStatus";
 import { api, auth } from "@/lib/api";
 
 export const Route = createFileRoute("/notifications")({
@@ -70,6 +71,9 @@ function NotifPage() {
           </button>
         }
       />
+      <div className="px-4 pb-1">
+        <CacheStatus dataUpdatedAt={q.dataUpdatedAt} isFetching={refreshing} />
+      </div>
 
       <div className="px-4 pb-3">
         <div className="no-scrollbar flex gap-2 overflow-x-auto">
