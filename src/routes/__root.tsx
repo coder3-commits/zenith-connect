@@ -93,6 +93,35 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AuthBootstrap({ queryClient }: { queryClient: any }) {
+  // Hydrate auth store from storage, wire the global 401 handler, and
+  // validate the session in the background.
+  useEffect(() => {
+    useAuthStore.getState().hydrate();
+    setOn401Handler(() => {
+      useAuthStore.getState().logout();
+      queryClient.clear();
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+        window.location.assign("/login");
+      }
+    });
+    if (useAuthStore.getState().token) {
+      queryClient
+        .prefetchQuery({
+          queryKey: queryKeys.auth.me(),
+          queryFn: async () => {
+            const u = await authApi.me();
+            if (u) useAuthStore.getState().setUser(u);
+            return u;
+          },
+          meta: { silent: true },
+        })
+        .catch(() => undefined);
+    }
+  }, [queryClient]);
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -109,6 +138,7 @@ function RootComponent() {
         client={queryClient}
         persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 * 7 }}
       >
+        <AuthBootstrap queryClient={queryClient} />
         <Outlet />
         <Toaster position="top-center" richColors closeButton />
       </PersistQueryClientProvider>
