@@ -1,110 +1,137 @@
-# Zenith Connect — Frontend Redesign Plan
+## Goal
 
-A focused, high-impact visual + UX overhaul of the existing app. No route changes, no backend changes, no removed functionality.
+Refactor the integration layer behind the existing Zentrix screens. No visual, layout, copy, or workflow changes. All 15 current routes keep rendering identically; only their data-access code is replaced with a typed, centralized service layer.
 
-## Scope
+## What changes
 
-All existing routes get redesigned in-place:
-`/login`, `/register`, `/home`, `/wallet/fund`, `/wallet/transfer`, `/transactions`, `/notifications`, `/profile`, `/services`, `/services/airtime`, `/services/data`, `/services/electricity`, `/services/exam`, `/services/crypto`.
+### 1. New `src/api/` layer (typed, axios-based)
 
-Backend, `src/lib/api.ts`, auth flow, `PinDialog`, and `Receipt` core logic remain untouched. Receipt visuals get a polish pass only.
+Replace ad-hoc `fetch` in `src/lib/api.ts` with an axios instance + per-domain service modules.
 
-## 1. Design System (foundation)
+```
+src/api/
+  axios.ts          # single instance, baseURL, timeout, interceptors
+  client.ts         # thin wrapper exposing get/post/put/del with envelope unwrap
+  auth.api.ts       # login, register, me, logout, refresh
+  wallet.api.ts     # balance, banks, verifyAccount, transfer, fund
+  transaction.api.ts# list, detail
+  vas.api.ts        # airtime, data, electricity, exam
+  crypto.api.ts     # rates, buy, sell
+  notification.api.ts
+  profile.api.ts
+  admin.api.ts      # stub for future admin surface, isolated from user client
+```
 
-Update `src/styles.css`:
-- Refined fintech palette (deep indigo primary, mint accent, soft neutrals, glass overlays)
-- New tokens: `--gradient-hero`, `--gradient-mesh`, `--glass-bg`, `--glass-border`, `--shadow-soft`, `--shadow-float`, `--shadow-glow`
-- Premium type scale: display (Sora), body (Plus Jakarta Sans), tabular-nums for amounts
-- Motion tokens (durations, easings)
-- Keyframes: `fade-in`, `slide-up`, `scale-in`, `shimmer`, `count-up-pulse`, `pull-refresh`
+- `axios.ts`: `baseURL = import.meta.env.VITE_API_URL`, 20s timeout, JSON headers, request interceptor attaches `Bearer <token>` from `tokenStore`, response interceptor maps errors via `formatApiError()` and triggers global 401 logout, surfaces 429/5xx/network through standardized `ApiError`.
+- Each `*.api.ts` exports pure async functions with typed inputs/outputs from `src/types/`. Components never construct URLs.
 
-Introduce primitives in `src/components/ui-kit/`:
-- `GlassCard`, `GradientCard`, `StatChip`, `SectionHeader`, `EmptyState`, `SkeletonRow`, `AmountDisplay` (with hide/reveal + tabular nums), `IconTile`, `SuccessAnimation`, `PageTransition`
+### 2. Token + auth state (`src/store/`)
 
-## 2. Motion
+Introduce a small Zustand store (already idiomatic, no Redux churn).
 
-Add `framer-motion` (already in deps if present; otherwise install). Use sparingly:
-- Page transitions (fade + slide-up 200ms)
-- Balance count-up
-- Stagger on quick actions and service grid
-- Bottom-nav active indicator spring
-- Success checkmark on transfers/purchases
+```
+src/store/
+  authStore.ts      # token, user, isAuthenticated, hydrate(), login(), logout()
+  index.ts
+```
 
-## 3. Screen-by-screen upgrades
+- Persists token+user to `localStorage` under the existing `zentrix.token` / `zentrix.user` keys so current sessions survive.
+- `tokenStore` (separate, sync, no React) used by axios interceptor to avoid circular import.
+- 401 from interceptor → `authStore.logout()` + redirect to `/login` once.
 
-**Auth (`login`, `register`)**
-- Hero with animated gradient mesh + subtle blur orbs
-- Floating glass form card, large inputs, inline validation, password strength meter on register
-- Smooth screen transition between login ↔ register
+### 3. Typed models (`src/types/`)
 
-**Home (`/home`)**
-- New header: avatar + greeting + notification bell with unread dot + status pill
-- Hero wallet card: gradient + glass, animated balance reveal, eye toggle, income/expense mini-chips, "Fund" + "Send" inline CTAs
-- Quick actions row (6 tiles) with icon tiles + labels, ripple on press
-- "Smart services" grid — illustrated cards with gradients and badges
-- Recent transactions feed with grouped date headers, status dots, category icons
-- Referral banner restyled as gradient promo card
+```
+src/types/
+  api.ts            # ApiEnvelope<T>, ApiError, Paginated<T>
+  user.ts           # User, KycStatus
+  wallet.ts         # Wallet, Bank, TransferPayload, TransferResult
+  transaction.ts    # Transaction, TxnStatus, TxnType
+  vas.ts            # AirtimePayload, DataPlan, ElectricityPayload, ExamPayload
+  notification.ts
+```
 
-**Services hub + each service**
-- Unified `ServiceLayout` with hero header, contextual help chip
-- Airtime/Data: network picker as logo chips, smart amount input with quick presets, summary card pinned bottom
-- Electricity: disco picker grid, meter preview card, pre-pay/post-pay tabs
-- Exam: plan cards with gradient borders for selected
-- Crypto: coin cards with mini sparkline, market sentiment chips, portfolio summary card
+### 4. React Query hooks (`src/hooks/queries/`)
 
-**Wallet**
-- Fund: payment method cards (bank transfer, card), copy-to-clipboard account row with toast, animated steps
-- Transfer: recipient input with avatar circle, amount with naira big display, preview sheet, success animation → existing Receipt
+One hook per endpoint, single source of truth for keys + options. Components call hooks, not API functions directly.
 
-**Transactions**
-- Filter chips (All / In / Out / Bills / Crypto)
-- Date-grouped feed, category icons, amount color coding
-- Polished skeletons; rich empty state
+```
+src/hooks/queries/
+  useWallet.ts          # useWalletBalance, useBanks, useVerifyAccount, useTransfer, useFundWallet
+  useTransactions.ts
+  useNotifications.ts
+  useProfile.ts
+  useVas.ts             # useBuyAirtime, useBuyData, usePayElectricity, usePayExam
+  useCrypto.ts
+  useAuth.ts            # useLogin, useRegister, useMe
+  keys.ts               # queryKeys factory — central, typed
+```
 
-**Notifications**
-- Category tabs (All / Activity / Security / Promo)
-- Unread accent bar + dot, time-ago, swipe-friendly cards
+- Mutations call `qc.invalidateQueries({ queryKey: queryKeys.wallet.balance() })` etc.
+- Existing `QueryClient` defaults (staleTime, offlineFirst, persistence) preserved.
 
-**Profile**
-- Identity card with verification chip
-- Sectioned list: Security, Preferences (theme toggle), Referral, KYC progress bar, Linked accounts, Support
+### 5. Transaction safety
 
-**Receipt (visual only)**
-- Brand watermark, ticket-style notches, QR placeholder block, refined typography
+- All financial mutations (transfer, fund, airtime, data, electricity, exam, crypto) go through a `useSafeMutation` wrapper that:
+  - generates an idempotency key (`crypto.randomUUID()`) sent as `Idempotency-Key` header
+  - disables re-fire while `isPending`
+  - clears any PIN from memory in `onSettled`
+  - returns normalized `{ status, reference, fee, timestamp }`
+- Buttons already use `disabled={m.isPending}` — keep visual, just wire to the wrapper.
 
-**BottomNav**
-- Floating pill with spring-animated active indicator, icon + label, center FAB for "Send"
+### 6. Forms: React Hook Form + Zod
 
-**OfflineBanner**
-- Slide-down with subtle pulse
+Migrate validation logic in `login`, `register`, `wallet.transfer`, `wallet.fund`, and the four VAS routes to RHF + Zod schemas under `src/schemas/`. Inputs, labels, placement, and error rendering stay identical — only the wiring changes (`register()` instead of manual `useState`, `formState.errors[x]?.message` replaces inline checks). Visible UI unchanged.
 
-## 4. Performance & resilience (preserve)
+### 7. Global error handling
 
-- Keep TanStack Query offline-first config
-- Preserve all existing loading/error states; upgrade visuals only
-- Lazy-load Framer Motion features where possible; prefer CSS transitions for simple cases
-- Tabular-nums + fixed widths to avoid layout shift on amounts
+`src/lib/errors.ts`:
+- `formatApiError(err): string` — extracts backend `message`, falls back to friendly text per status.
+- React Query `QueryCache` + `MutationCache` `onError` → single `toast.error(formatApiError(e))` (skip if mutation defines its own onError).
+- Never logs tokens or request bodies containing `pin`/`password`.
 
-## Constraints respected
+### 8. Route protection
 
-- No route additions/removals
-- No backend changes
-- `src/lib/api.ts`, auth, `PinDialog` untouched
-- `Receipt` component logic untouched (style refresh only)
-- Airtime/data success flows preserved
+Extract current per-route `beforeLoad` token check into `requireAuth({ context, location })` helper in `src/lib/guards.ts`. Each protected route calls it. Behavior identical to today (redirect to `/login`), just deduplicated. Admin routes (future) get separate `requireAdmin` guard reading `authStore.user.roles`.
 
-## Technical notes
+### 9. App startup
 
-- All colors via tokens in `src/styles.css` (oklch); no hard-coded hex in components
-- New primitives under `src/components/ui-kit/` to avoid clashing with shadcn `ui/`
-- Dark mode parity maintained
-- Mobile-first, max-width 480px shell preserved; desktop shows centered shell on subtle gradient backdrop
+`src/app/bootstrap.ts` runs once from `__root.tsx` `RootComponent`:
+1. hydrate `authStore` from localStorage
+2. if token present, fire `useMe` via `queryClient.prefetchQuery` to validate session; on 401 the interceptor clears auth
+3. render `<Outlet />`
 
-## Out of scope
+No visual splash added — matches current behavior (instant render with cached data).
 
-- Adding new routes/features
-- Changing API shapes
-- Replacing shadcn or query/router stacks
-- Adding heavy chart libs (use lightweight inline SVG sparklines)
+### 10. Environment + security
 
-Approve and I'll execute in this order: design tokens → primitives → BottomNav/Shell → Home → Auth → Services → Wallet → Transactions/Notifications → Profile → Receipt polish.
+- Add `.env.example` documenting `VITE_API_URL`.
+- Remove the hardcoded `https://api.zentrix.app/api/v1` fallback from runtime code; keep only as `.env.example` default.
+- PIN inputs: confirm `PinDialog` clears state on close and never logs.
+- Strip any `console.log` that includes request/response bodies.
+
+## What does NOT change
+
+- Every file under `src/routes/**` keeps the same JSX tree, classNames, copy, and component composition.
+- `src/components/**` untouched except for `Receipt` if it imports from `@/lib/api` (only the import path changes).
+- `src/styles.css`, `BottomNav`, `MobileShell`, `ScreenHeader`, `PullToRefresh`, `CacheStatus`, `PinDialog` — unchanged.
+- Routing tree, URLs, navigation flows — unchanged.
+- `QueryClient` config, persistence, offline-first behavior — preserved.
+
+## Compatibility shim
+
+`src/lib/api.ts` is rewritten to re-export from `src/api/client.ts` so any missed call site keeps compiling during the migration; flagged with `@deprecated` JSDoc.
+
+## Out of scope (call out)
+
+- No new admin UI — only `admin.api.ts` stub + guard, since no admin screens exist yet.
+- No backend changes.
+- No new dependencies beyond `axios`, `zustand`, `react-hook-form`, `@hookform/resolvers` (zod is already used).
+
+## Order of execution
+
+1. Install deps (`axios`, `zustand`, `react-hook-form`, `@hookform/resolvers`).
+2. Add `src/types/`, `src/api/`, `src/store/`, `src/hooks/queries/`, `src/schemas/`, `src/lib/guards.ts`, `src/lib/errors.ts`.
+3. Rewrite `src/lib/api.ts` as compat shim.
+4. Migrate routes one batch at a time (auth → wallet → vas → notifications/profile), verifying build between batches.
+5. Wire global error + startup bootstrap last.
