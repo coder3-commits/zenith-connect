@@ -10,6 +10,11 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { Toaster } from "sonner";
+import { useEffect } from "react";
+import { setOn401Handler } from "@/api/client";
+import { useAuthStore } from "@/store/authStore";
+import { authApi } from "@/api/auth.api";
+import { queryKeys } from "@/hooks/queries/keys";
 
 import appCss from "../styles.css?url";
 
