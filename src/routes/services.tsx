@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Phone, Wifi, Zap, GraduationCap, Bitcoin, Send, ChevronRight, ArrowDownToLine, ScanLine, QrCode, Search } from "lucide-react";
+import { Phone, Wifi, Zap, GraduationCap, Bitcoin, Send, ChevronRight, ArrowDownToLine, ScanLine, QrCode, Search, Building2 } from "lucide-react";
 import { useState } from "react";
 import { MobileShell } from "@/components/MobileShell";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -12,6 +12,7 @@ const all = [
   { to: "/services/electricity", label: "Electricity", desc: "Prepaid & postpaid", Icon: Zap, group: "Bills", grad: "from-warning/25 to-warning/5", icl: "text-warning" },
   { to: "/services/exam", label: "Exam PINs", desc: "WAEC, NECO, JAMB", Icon: GraduationCap, group: "Bills", grad: "from-secondary to-muted", icl: "text-secondary-foreground" },
   { to: "/wallet/fund", label: "Fund Wallet", desc: "Bank transfer · Card", Icon: ArrowDownToLine, group: "Money", grad: "from-success/20 to-success/5", icl: "text-success" },
+  { to: "/dashboard/virtual-account", label: "Virtual Account", desc: "Dedicated account number", Icon: Building2, group: "Money", grad: "from-primary/10 to-accent/10", icl: "text-primary" },
   { to: "/wallet/transfer", label: "Send Money", desc: "To any Nigerian bank", Icon: Send, group: "Money", grad: "from-primary/15 to-primary/5", icl: "text-primary" },
   { to: "/services/crypto", label: "Buy / Sell Crypto", desc: "BTC · USDT · SOL · TON", Icon: Bitcoin, group: "Money", grad: "from-primary/15 to-accent/15", icl: "text-primary" },
 ];

@@ -24,6 +24,7 @@ import { Route as ServicesElectricityRouteImport } from './routes/services.elect
 import { Route as ServicesDataRouteImport } from './routes/services.data'
 import { Route as ServicesCryptoRouteImport } from './routes/services.crypto'
 import { Route as ServicesAirtimeRouteImport } from './routes/services.airtime'
+import { Route as DashboardVirtualAccountRouteImport } from './routes/dashboard.virtual-account'
 
 const TransactionsRoute = TransactionsRouteImport.update({
   id: '/transactions',
@@ -100,6 +101,11 @@ const ServicesAirtimeRoute = ServicesAirtimeRouteImport.update({
   path: '/airtime',
   getParentRoute: () => ServicesRoute,
 } as any)
+const DashboardVirtualAccountRoute = DashboardVirtualAccountRouteImport.update({
+  id: '/dashboard/virtual-account',
+  path: '/dashboard/virtual-account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/services': typeof ServicesRouteWithChildren
   '/transactions': typeof TransactionsRoute
+  '/dashboard/virtual-account': typeof DashboardVirtualAccountRoute
   '/services/airtime': typeof ServicesAirtimeRoute
   '/services/crypto': typeof ServicesCryptoRoute
   '/services/data': typeof ServicesDataRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/services': typeof ServicesRouteWithChildren
   '/transactions': typeof TransactionsRoute
+  '/dashboard/virtual-account': typeof DashboardVirtualAccountRoute
   '/services/airtime': typeof ServicesAirtimeRoute
   '/services/crypto': typeof ServicesCryptoRoute
   '/services/data': typeof ServicesDataRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/services': typeof ServicesRouteWithChildren
   '/transactions': typeof TransactionsRoute
+  '/dashboard/virtual-account': typeof DashboardVirtualAccountRoute
   '/services/airtime': typeof ServicesAirtimeRoute
   '/services/crypto': typeof ServicesCryptoRoute
   '/services/data': typeof ServicesDataRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/services'
     | '/transactions'
+    | '/dashboard/virtual-account'
     | '/services/airtime'
     | '/services/crypto'
     | '/services/data'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/services'
     | '/transactions'
+    | '/dashboard/virtual-account'
     | '/services/airtime'
     | '/services/crypto'
     | '/services/data'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/services'
     | '/transactions'
+    | '/dashboard/virtual-account'
     | '/services/airtime'
     | '/services/crypto'
     | '/services/data'
@@ -216,6 +228,7 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   ServicesRoute: typeof ServicesRouteWithChildren
   TransactionsRoute: typeof TransactionsRoute
+  DashboardVirtualAccountRoute: typeof DashboardVirtualAccountRoute
   WalletFundRoute: typeof WalletFundRoute
   WalletTransferRoute: typeof WalletTransferRoute
 }
@@ -327,6 +340,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServicesAirtimeRouteImport
       parentRoute: typeof ServicesRoute
     }
+    '/dashboard/virtual-account': {
+      id: '/dashboard/virtual-account'
+      path: '/dashboard/virtual-account'
+      fullPath: '/dashboard/virtual-account'
+      preLoaderRoute: typeof DashboardVirtualAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -359,6 +379,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   ServicesRoute: ServicesRouteWithChildren,
   TransactionsRoute: TransactionsRoute,
+  DashboardVirtualAccountRoute: DashboardVirtualAccountRoute,
   WalletFundRoute: WalletFundRoute,
   WalletTransferRoute: WalletTransferRoute,
 }
