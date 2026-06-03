@@ -1,13 +1,13 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { Building2, Copy, Loader2, Check } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Building2, Copy, Loader2, Check, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { MobileShell } from "@/components/MobileShell";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { VirtualAccountCard } from "@/components/virtual-account/VirtualAccountCard";
-import { api, auth } from "@/lib/api";
+import { api, auth, ApiError } from "@/lib/api";
 import { useSafeMutation } from "@/hooks/queries/useSafeMutation";
 import { formatApiError } from "@/lib/errors";
 
@@ -45,10 +45,31 @@ function VirtualAccountPage() {
   const query = useQuery({
     queryKey: ["virtual-account"],
     queryFn: () => api<VirtualAccountResponse>("/virtual-account"),
-    retry: 1,
+    retry: (count, err) => {
+      if (err instanceof ApiError && err.status === 404) return false;
+      return count < 1;
+    },
   });
 
   const account = pickAccount(query.data);
+  // A 404 means "no account yet" — that's the empty state, not a failure.
+  const isMissing = query.isError && query.error instanceof ApiError && query.error.status === 404;
+  const hasFetchError = query.isError && !isMissing;
+
+  // Surface fetch failures (network / 5xx / auth) as a toast — fire once per error.
+  const lastErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!hasFetchError) {
+      lastErrorRef.current = null;
+      return;
+    }
+    const msg = formatApiError(query.error);
+    if (lastErrorRef.current === msg) return;
+    lastErrorRef.current = msg;
+    toast.error(msg, {
+      description: "We couldn't load your virtual account. Please try again.",
+    });
+  }, [hasFetchError, query.error]);
 
   const generate = useSafeMutation<VirtualAccountResponse, void>(
     ({ idempotencyKey }) =>
@@ -56,9 +77,14 @@ function VirtualAccountPage() {
     {
       onSuccess: (data) => {
         qc.setQueryData(["virtual-account"], data);
-        toast.success("Virtual account created");
+        toast.success("Virtual account created", {
+          description: "You can now receive bank transfers into your wallet.",
+        });
       },
-      onError: (err) => toast.error(formatApiError(err)),
+      onError: (err) =>
+        toast.error(formatApiError(err), {
+          description: "We couldn't generate your account. Please try again.",
+        }),
     },
   );
 
@@ -112,6 +138,29 @@ function VirtualAccountPage() {
               Transfers to this account are processed within minutes. Minimum deposit: ₦100.
             </p>
           </>
+        ) : hasFetchError ? (
+          <div className="rounded-3xl bg-card p-6 text-center shadow-soft">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+              <RefreshCw className="h-5 w-5" />
+            </div>
+            <p className="text-base font-semibold">Couldn't load your account</p>
+            <p className="mt-1 text-sm text-muted-foreground">{formatApiError(query.error)}</p>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => query.refetch()}
+              disabled={query.isFetching}
+              className="mt-5 h-12 w-full rounded-2xl text-sm font-semibold"
+            >
+              {query.isFetching ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Retrying…
+                </>
+              ) : (
+                <>Try again</>
+              )}
+            </Button>
+          </div>
         ) : (
           <div className="rounded-3xl bg-card p-6 shadow-soft">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -121,9 +170,6 @@ function VirtualAccountPage() {
             <p className="mt-1 text-sm text-muted-foreground">
               Generate a dedicated bank account number linked to your wallet.
             </p>
-            {query.isError && (
-              <p className="mt-3 text-xs text-destructive">{formatApiError(query.error)}</p>
-            )}
             <Button
               type="button"
               onClick={() => generate.safeMutate()}
