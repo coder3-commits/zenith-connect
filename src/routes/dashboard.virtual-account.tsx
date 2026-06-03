@@ -111,7 +111,12 @@ function VirtualAccountPage() {
         subtitle="Receive money directly into your Zentrix wallet via bank transfer."
       />
 
+      <div className="px-4 pb-1">
+        <CacheStatus dataUpdatedAt={query.dataUpdatedAt} isFetching={query.isFetching} />
+      </div>
+
       <div className="px-4 space-y-5">
+
         {query.isLoading ? (
           <div className="flex h-48 items-center justify-center rounded-3xl bg-card shadow-soft">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
