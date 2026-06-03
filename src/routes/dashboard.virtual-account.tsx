@@ -7,6 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { VirtualAccountCard } from "@/components/virtual-account/VirtualAccountCard";
+import { CacheStatus } from "@/components/CacheStatus";
 import { api, auth, ApiError } from "@/lib/api";
 import { useSafeMutation } from "@/hooks/queries/useSafeMutation";
 import { formatApiError } from "@/lib/errors";
@@ -45,6 +46,10 @@ function VirtualAccountPage() {
   const query = useQuery({
     queryKey: ["virtual-account"],
     queryFn: () => api<VirtualAccountResponse>("/virtual-account"),
+    // Serve last persisted response instantly, then revalidate in the background.
+    staleTime: 1000 * 60 * 5, // 5 min — treat as fresh on quick revisits
+    gcTime: 1000 * 60 * 60 * 24, // 24h — survives reloads via PersistQueryClient
+    networkMode: "offlineFirst",
     retry: (count, err) => {
       if (err instanceof ApiError && err.status === 404) return false;
       return count < 1;
